@@ -183,9 +183,9 @@ export default function App() {
         {/* Recommendations */}
         <div className="grid grid-cols-1 gap-6">
            <Recommendations 
-              currentMonth={currentMonthIndex}
-              optimalStart={OPTIMAL_START_MONTH}
-              optimalEnd={OPTIMAL_END_MONTH}
+              currentKm={currentDistance}
+              optimalSellStartKm={optimalSellStart}
+              optimalSellEndKm={optimalSellEnd}
               purchasePrice={currentBike.purchasePrice}
               currentValue={buyBackValue}
               distance={currentDistance}

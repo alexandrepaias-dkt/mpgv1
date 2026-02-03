@@ -2,9 +2,9 @@ import React from 'react';
 import { ArrowUpRight, Calendar, ArrowRight, TrendingUp, Sparkles, TrendingDown } from 'lucide-react';
 
 export default function Recommendations({ 
-  currentMonth, 
-  optimalStart, 
-  optimalEnd,
+  currentKm, 
+  optimalSellStartKm, 
+  optimalSellEndKm,
   purchasePrice,
   currentValue,
   distance,
@@ -13,9 +13,9 @@ export default function Recommendations({
   onExplore,
   onTradeIn
 }) {
-  const isTooSoon = currentMonth < optimalStart;
-  const isOptimalWindow = currentMonth >= optimalStart && currentMonth <= optimalEnd;
-  const isUpgradePhase = currentMonth > optimalEnd;
+  const isTooSoon = currentKm < optimalSellStartKm;
+  const isOptimalWindow = currentKm >= optimalSellStartKm && currentKm <= optimalSellEndKm;
+  const isUpgradePhase = currentKm > optimalSellEndKm;
 
   const costPerKm = distance > 0 
     ? ((purchasePrice - currentValue) / distance).toFixed(2)
@@ -45,7 +45,7 @@ export default function Recommendations({
               <h4 className="font-bold text-[#101010]">Early Ownership Phase</h4>
             </div>
             <p className="text-sm text-[#616161] mb-4">
-              Your bike is still new! The best selling window starts at <strong>{(optimalStart * 150).toLocaleString()} km</strong>.
+              Your bike is still new! The best selling window starts at <strong>{optimalSellStartKm.toLocaleString()} km</strong>.
               Current value: <strong className="text-[#3643BA]">€{currentValue}</strong>
             </p>
             <div className="grid grid-cols-2 gap-3 text-sm">
