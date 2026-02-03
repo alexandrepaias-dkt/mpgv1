@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Wrench, Factory, Calendar, Bell, Hammer, ChevronDown, ChevronUp, ShoppingCart, PlayCircle } from 'lucide-react';
+import { CheckCircle2, Wrench, Factory, Calendar, Bell, Hammer, ChevronDown, ChevronUp, ShoppingCart, PlayCircle, QrCode, Link as LinkIcon, PlusCircle } from 'lucide-react';
 
 // Sub-component for the DIY expansion panel
 const DIYPanel = ({ parts, tutorial }) => (
@@ -37,12 +37,120 @@ const DIYPanel = ({ parts, tutorial }) => (
   </div>
 );
 
+// Sub-component for individual component row in Completed Service Panel
+const ComponentRow = ({ component }) => {
+  const [currentEpc, setCurrentEpc] = useState(component.epc);
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+
+  const handleAssignClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (inputValue.trim()) {
+      setCurrentEpc(inputValue.trim());
+      setIsEditing(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    }
+  };
+
+  const digitalTwinUrl = `https://digital-twin-unique-product-prd.dktapp.cloud/details/${currentEpc}`;
+
+  return (
+    <div className="flex flex-col gap-2 bg-white p-3 rounded border border-[#34B78F]/30 shadow-sm">
+      <div className="flex justify-between items-start">
+        <span className="text-sm font-bold text-gray-800">{component.name}</span>
+        {component.tutorialUrl && (
+          <a 
+            href={component.tutorialUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-gray-400 hover:text-[#3643BA] transition-colors"
+            title="View Tutorial"
+          >
+            <PlayCircle size={16} />
+          </a>
+        )}
+      </div>
+
+      <div className="mt-1">
+        {currentEpc ? (
+          <a 
+            href={digitalTwinUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-xs text-[#3643BA] bg-[#3643BA]/5 px-2 py-1 rounded hover:bg-[#3643BA]/10 transition-colors border border-[#3643BA]/20 w-fit"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <QrCode size={12} />
+            <span className="font-mono">{currentEpc}</span>
+            <LinkIcon size={10} />
+          </a>
+        ) : isEditing ? (
+          <div className="flex gap-2 w-full" onClick={(e) => e.stopPropagation()}>
+            <input 
+              type="text" 
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Paste EPC here..."
+              className="flex-1 text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-[#3643BA]"
+              autoFocus
+            />
+            <button 
+              onClick={handleSave}
+              className="text-xs bg-[#3643BA] text-white px-3 py-1 rounded font-bold hover:bg-[#2a3599]"
+            >
+              Save
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleAssignClick(); }}
+            className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded hover:bg-gray-100 transition-colors border border-gray-200 border-dashed w-full justify-center"
+          >
+            <PlusCircle size={12} />
+            Assign Component EPC
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Sub-component for Completed Service expansion
+const CompletedServicePanel = ({ replacedComponents }) => (
+  <div className="mt-4 pt-4 border-t border-[#34B78F]/20 bg-[#34B78F]/5 rounded-lg p-4 animate-in slide-in-from-top-2 cursor-default" onClick={(e) => e.stopPropagation()}>
+    <h4 className="text-xs font-bold text-[#34B78F] uppercase mb-3 flex items-center gap-2">
+      <CheckCircle2 size={14} />
+      Service Details
+    </h4>
+    
+    {(!replacedComponents || replacedComponents.length === 0) ? (
+      <p className="text-xs text-gray-500 italic">No components replaced during this service.</p>
+    ) : (
+      <div className="space-y-3">
+        <p className="text-xs text-gray-500 font-medium">Components Added / Replaced:</p>
+        {replacedComponents.map((comp, idx) => (
+          <ComponentRow key={idx} component={comp} />
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 export default function MaintenanceHistory({ history, onBookService }) {
-  const [openDIY, setOpenDIY] = useState({});
+  const [expandedItems, setExpandedItems] = useState({});
   const [reminders, setReminders] = useState({});
 
-  const toggleDIY = (id) => {
-    setOpenDIY(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggleExpansion = (id) => {
+    setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const toggleReminder = (id) => {
@@ -59,7 +167,7 @@ export default function MaintenanceHistory({ history, onBookService }) {
   const getEventStyles = (status) => {
     if (status === 'completed') {
       return {
-        card: 'border-[#34B78F] bg-[#34B78F]/5',
+        card: 'border-[#34B78F] bg-[#34B78F]/5 hover:bg-[#34B78F]/10 cursor-pointer',
         opacity: 'opacity-100'
       };
     }
@@ -93,6 +201,7 @@ export default function MaintenanceHistory({ history, onBookService }) {
         <div className="space-y-6">
           {history.map((item, index) => {
             const styles = getEventStyles(item.status);
+            const isExpanded = expandedItems[index];
             
             return (
               <div key={index} className={`relative flex gap-4 ${styles.opacity}`}>
@@ -105,7 +214,10 @@ export default function MaintenanceHistory({ history, onBookService }) {
                 </div>
 
                 {/* Card */}
-                <div className={`flex-1 border rounded-xl p-4 transition-all ${styles.card}`}>
+                <div 
+                  className={`flex-1 border rounded-xl p-4 transition-all ${styles.card}`}
+                  onClick={() => item.status === 'completed' && toggleExpansion(index)}
+                >
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <div>
                       <div className="flex items-center gap-2">
@@ -124,9 +236,12 @@ export default function MaintenanceHistory({ history, onBookService }) {
                     
                     {/* Status Badge */}
                     {item.status === 'completed' && (
-                      <span className="px-2 py-1 bg-[#34B78F]/10 text-[#34B78F] text-[10px] font-bold uppercase rounded border border-[#34B78F]/20">
-                        Completed
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="px-2 py-1 bg-[#34B78F]/10 text-[#34B78F] text-[10px] font-bold uppercase rounded border border-[#34B78F]/20 flex items-center gap-1">
+                          Completed
+                          {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </span>
+                      </div>
                     )}
                   </div>
 
@@ -148,16 +263,16 @@ export default function MaintenanceHistory({ history, onBookService }) {
                         </button>
                         
                         <button 
-                          onClick={() => toggleDIY(index)}
+                          onClick={() => toggleExpansion(index)}
                           className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs font-bold border transition-colors ${
-                            openDIY[index] 
+                            isExpanded 
                               ? 'bg-gray-800 text-white border-gray-800' 
                               : 'bg-white text-gray-700 border-gray-300 hover:border-gray-800'
                           }`}
                         >
                           <Hammer size={14} />
                           DIY
-                          {openDIY[index] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
                       </div>
 
@@ -187,13 +302,18 @@ export default function MaintenanceHistory({ history, onBookService }) {
                       </div>
 
                       {/* DIY Panel */}
-                      {openDIY[index] && (
+                      {isExpanded && (
                         <DIYPanel 
                           parts={item.diyDetails?.parts || []}
                           tutorial={item.diyDetails?.tutorial || "Standard Maintenance Guide"}
                         />
                       )}
                     </div>
+                  )}
+
+                  {/* Completed Service Panel */}
+                  {item.status === 'completed' && isExpanded && (
+                    <CompletedServicePanel replacedComponents={item.replacedComponents} />
                   )}
                 </div>
               </div>

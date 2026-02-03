@@ -32,9 +32,34 @@ export default function App() {
       image: "https://images.unsplash.com/photo-1764067521927-9fc70adc5a31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyb2FkJTIwYmlrZSUyMHByb2Zlc3Npb25hbCUyMGN5Y2xpbmd8ZW58MXx8fHwxNzcwMDQyMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       purchasePrice: 2799, // Updated to match CSV first_sale_price
       schedule: [
-        { id: 1, service: "Initial Safety Check", mileage: 500, valueImpact: 0, diyDetails: { parts: [{ name: "None", price: "€0" }], tutorial: "Basic Safety Inspection Guide" } },
-        { id: 2, service: "Chain Wear Assessment", mileage: 1500, valueImpact: 50, diyDetails: { parts: [{ name: "Chain Checker Tool", price: "€12" }], tutorial: "How to Measure Chain Wear" } },
-        { id: 3, service: "Brake Caliper Inspection", mileage: 3000, valueImpact: 120, diyDetails: { parts: [{ name: "Brake Pads (Pair)", price: "€25" }, { name: "Bleed Kit", price: "€35" }], tutorial: "Hydraulic Disc Brake Service" } },
+        { 
+          id: 1, 
+          service: "Initial Safety Check", 
+          mileage: 500, 
+          valueImpact: 0, 
+          diyDetails: { parts: [{ name: "None", price: "€0" }], tutorial: "Basic Safety Inspection Guide" },
+          replacedComponents: [] 
+        },
+        { 
+          id: 2, 
+          service: "Chain Wear Assessment", 
+          mileage: 1500, 
+          valueImpact: 50, 
+          diyDetails: { parts: [{ name: "Chain Checker Tool", price: "€12" }], tutorial: "How to Measure Chain Wear" },
+          replacedComponents: [
+            { name: "Shimano Ultegra Chain 11s", epc: "3039606203C36C8000000001", tutorialUrl: "https://youtu.be/some_chain_guide" }
+          ]
+        },
+        { 
+          id: 3, 
+          service: "Brake Caliper Inspection", 
+          mileage: 3000, 
+          valueImpact: 120, 
+          diyDetails: { parts: [{ name: "Brake Pads (Pair)", price: "€25" }, { name: "Bleed Kit", price: "€35" }], tutorial: "Hydraulic Disc Brake Service" },
+          replacedComponents: [
+            { name: "Brake Pads L03A", epc: null }
+          ]
+        },
         { id: 4, service: "Full Drivetrain Service", mileage: 6000, valueImpact: 150, diyDetails: { parts: [{ name: "Cassette", price: "€85" }, { name: "Chain", price: "€45" }, { name: "Degreaser", price: "€15" }], tutorial: "Complete Drivetrain Overhaul" } },
         { id: 5, service: "Wheel Truing & Tension", mileage: 10000, valueImpact: 60, diyDetails: { parts: [{ name: "Spoke Key", price: "€8" }], tutorial: "Advanced Wheel Truing" } },
         { id: 6, service: "Bottom Bracket Service", mileage: 15000, valueImpact: 80, diyDetails: { parts: [{ name: "BB Tool", price: "€20" }, { name: "Grease", price: "€12" }], tutorial: "Bottom Bracket Maintenance" } },
@@ -49,7 +74,16 @@ export default function App() {
       schedule: [
         { id: 1, service: "Suspension Fork Setup", mileage: 300, valueImpact: 0, diyDetails: { parts: [{ name: "Shock Pump", price: "€25" }], tutorial: "Setting Sag and Rebound" } },
         { id: 2, service: "Tubeless Sealant Top-up", mileage: 800, valueImpact: 30, diyDetails: { parts: [{ name: "Sealant (100ml)", price: "€15" }], tutorial: "Tubeless Maintenance" } },
-        { id: 3, service: "Fork Lower Leg Service", mileage: 2500, valueImpact: 150, diyDetails: { parts: [{ name: "Seal Kit", price: "€40" }, { name: "Fork Oil", price: "€20" }], tutorial: "50h Fork Service" } },
+        { 
+          id: 3, 
+          service: "Fork Lower Leg Service", 
+          mileage: 2500, 
+          valueImpact: 150, 
+          diyDetails: { parts: [{ name: "Seal Kit", price: "€40" }, { name: "Fork Oil", price: "€20" }], tutorial: "50h Fork Service" },
+          replacedComponents: [
+            { name: "Fork Seals 32mm", epc: "3039606203C36C8000000002", tutorialUrl: "https://youtu.be/fork_service" }
+          ]
+        },
         { id: 4, service: "Pivot Bearing Check", mileage: 5000, valueImpact: 200, diyDetails: { parts: [{ name: "Bearing Kit", price: "€60" }], tutorial: "Suspension Linkage Service" } },
         { id: 5, service: "Drivetrain Deep Clean", mileage: 10000, valueImpact: 100, diyDetails: { parts: [{ name: "Chain", price: "€45" }], tutorial: "MTB Drivetrain Care" } },
         { id: 6, service: "Full Suspension Service", mileage: 15000, valueImpact: 300, diyDetails: { parts: [{ name: "Seal Kit", price: "€80" }], tutorial: "200h Suspension Service" } },
@@ -142,15 +176,23 @@ export default function App() {
     setExploreModalOpen(true);
   };
 
-  const handleToggleBike = () => {
-    setCurrentBikeIndex(prev => (prev + 1) % BIKES.length);
+  const availableEpcs = BIKES.map(b => b.epc);
+
+  const handleEpcSelect = (epc) => {
+    const index = BIKES.findIndex(b => b.epc === epc);
+    if (index !== -1) {
+      setCurrentBikeIndex(index);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F5F4F5] text-[#101010] font-sans pb-12 transition-colors duration-500">
-      <div onClick={handleToggleBike} className="cursor-pointer" title="Simulate Scanning Different Product">
-        <Header userName={USER_NAME} epcId={currentBike.epc} />
-      </div>
+      <Header 
+        userName={USER_NAME} 
+        epcId={currentBike.epc} 
+        availableEpcs={availableEpcs}
+        onEpcSelect={handleEpcSelect}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
@@ -202,7 +244,17 @@ export default function App() {
         </div>
 
         {/* Maintenance History */}
-        <section>
+        <section className="space-y-6">
+           {/* Timeline Control Copy */}
+           <TimelineControl 
+             currentIndex={currentMonthIndex}
+             maxIndex={DATASET ? DATASET.length - 1 : 36}
+             onIndexChange={setCurrentMonthIndex}
+             currentDate={DATASET && DATASET[currentMonthIndex] ? DATASET[currentMonthIndex].date : new Date().toISOString()}
+             startDate={DATASET && DATASET[0] ? DATASET[0].date : "2024-01-01"}
+             endDate={DATASET && DATASET.length > 0 ? DATASET[DATASET.length - 1].date : "2026-12-01"}
+           />
+
            <MaintenanceHistory 
              history={calculatedHistory}
              onBookService={(item) => handleBookService(item)}
