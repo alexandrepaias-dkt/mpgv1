@@ -22,7 +22,7 @@ function ImageWithFallback(props) {
   );
 }
 
-export default function BikeHero({ productName, purchaseDate, buyBackValue, imageUrl, onGetQuote }) {
+export default function BikeHero({ productName, purchaseDate, productionDate, epcId, buyBackValue, imageUrl, onGetQuote }) {
   return (
     <div className="relative bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="relative h-48 sm:h-60 overflow-hidden">
@@ -35,7 +35,22 @@ export default function BikeHero({ productName, purchaseDate, buyBackValue, imag
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">{productName}</h1>
-          <p className="text-sm opacity-90">Purchased: {purchaseDate}</p>
+          <div className="flex flex-wrap gap-4 text-sm opacity-90">
+             <p>Purchased: {purchaseDate}</p>
+             {productionDate && (
+               <p>
+                 Produced: <a 
+                   href={`https://digital-twin-unique-product-prd.dktapp.cloud/details/${epcId}`} 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="underline hover:text-[#FF8946] transition-colors"
+                   title="View Digital Passport"
+                 >
+                   {productionDate}
+                 </a>
+               </p>
+             )}
+          </div>
         </div>
       </div>
       <div className="p-6 bg-gradient-to-r from-[#FF8946]/10 to-[#FF8946]/5 border-t-2 border-[#FF8946]">

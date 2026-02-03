@@ -67,7 +67,7 @@ export default function App() {
   const OPTIMAL_END_MONTH = 24;
 
   // Derive values based on whether we are using the CSV bike or the simulated one
-  const { currentDistance, buyBackValue, healthScore, optimalSellStart, optimalSellEnd } = useMemo(() => {
+  const { currentDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd } = useMemo(() => {
     if (isCsvBike) {
       // Use CSV Data
       const data = (DATASET && DATASET.length > 0) ? DATASET[currentMonthIndex] : null;
@@ -77,6 +77,7 @@ export default function App() {
           currentDistance: 0,
           buyBackValue: 0,
           healthScore: 0,
+          productionDate: "2023-10-25",
           optimalSellStart: 14000,
           optimalSellEnd: 17500
         };
@@ -86,6 +87,7 @@ export default function App() {
         currentDistance: data.total_milage,
         buyBackValue: data.second_hand_price,
         healthScore: data.health_score,
+        productionDate: data.production_date,
         optimalSellStart: data.low_optimal_resale_milage,
         optimalSellEnd: data.high_optimal_resale_milage
       };
@@ -103,6 +105,7 @@ export default function App() {
         currentDistance: dist,
         buyBackValue: val,
         healthScore: score,
+        productionDate: "2024-01-15",
         optimalSellStart: 14000,
         optimalSellEnd: 17500
       };
@@ -154,6 +157,8 @@ export default function App() {
         {/* Hero Section */}
         <BikeHero
           productName={currentBike.name}
+          epcId={currentBike.epc}
+          productionDate={isCsvBike && DATASET && DATASET.length > 0 ? DATASET[currentMonthIndex]?.production_date : "2024-01-15"}
           purchaseDate={isCsvBike ? "October 25, 2023" : "January 15, 2024"} // CSV Production Date vs Default
           buyBackValue={buyBackValue}
           imageUrl={currentBike.image}
@@ -174,7 +179,7 @@ export default function App() {
         <InvestmentOptimizer 
           currentKm={currentDistance} 
           healthScore={healthScore}
-          maxKm={isCsvBike && DATASET && DATASET.length > 0 ? DATASET[DATASET.length - 1].total_milage : 20000}
+          maxKm={20000} 
           optimalSellStart={optimalSellStart}
           optimalSellEnd={optimalSellEnd}
         />
