@@ -3,6 +3,7 @@ import { ArrowUpRight, Calendar, ArrowRight, TrendingUp, Sparkles, TrendingDown 
 
 export default function Recommendations({ 
   currentKm, 
+  monthlyDistance,
   optimalSellStartKm, 
   optimalSellEndKm,
   purchasePrice,
@@ -133,7 +134,7 @@ export default function Recommendations({
             </div>
           </div>
           <div className="mb-4">
-            <p className="text-sm mb-2">You ride <strong>{Math.round(distance/36)} km/month</strong>.</p>
+            <p className="text-sm mb-2">You ride <strong>{monthlyDistance} km/month</strong>.</p>
             <p className="text-lg">
               Save <strong className="text-[#7AFFA6]">€15/mo</strong> with our plan.
             </p>

@@ -34,14 +34,14 @@ export const CSV_CONTENT = `date,epc,model_code,label,production_date,monthly_mi
 2026-09-01,30395DFA8210100000000F7A,8862494,LD 940E CONNECT LF,2023-10-25,"526,33","15 046,16","75,9",3,14638,16575,"2 799,00 €","€1 290,00"
 2026-10-01,30395DFA8210100000000F7A,8862494,LD 940E CONNECT LF,2023-10-25,"455,14","15 501,30","73,8",3,14708,16583,"2 799,00 €","€1 251,00"
 2026-11-01,30395DFA8210100000000F7A,8862494,LD 940E CONNECT LF,2023-10-25,"372,88","15 874,18","73,0",3,14729,16542,"2 799,00 €","€1 213,00"
-2026-12-01,30395DFA8210100000000F7A,8862494,LD 940E CONNECT LF,2023-10-25,"316,38","16 190,57","70,5",3,14800,16550,"2 799,00 €","€1 177,00
+2026-12-01,30395DFA8210100000000F7A,8862494,LD 940E CONNECT LF,2023-10-25,"316,38","16 190,57","70,5",3,14800,16550,"2 799,00 €","€1 177,00"
 `;
 
 // Helper to parse European numbers (e.g. "2 239,00" or "299,35" -> number)
 const parseEuroNumber = (str) => {
   if (!str) return 0;
-  // Remove currency symbol, spaces (including non-breaking), and replace comma with dot
-  const cleaned = str.replace(/[€\s\u00A0]/g, '').replace(',', '.');
+  // Remove everything except digits, minus sign, and comma
+  const cleaned = str.replace(/[^0-9,-]/g, '').replace(',', '.');
   return parseFloat(cleaned);
 };
 
@@ -51,12 +51,10 @@ export const parseCSV = () => {
   const data = lines.slice(1)
     .filter(line => line.trim() !== '') // Filter empty lines
     .map(line => {
-    // Handle quoted values (e.g., "1 234,56") by regex splitting
-    // This regex splits by comma ONLY if not inside quotes
-    const match = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-    if (!match) return null;
+    // Robust split by comma, ignoring commas inside quotes
+    const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.trim().replace(/^"|"$/g, ''));
     
-    const values = match.map(val => val.replace(/^"|"$/g, ''));
+    if (values.length < 13) return null; // Basic validation
     
     return {
       date: values[0],

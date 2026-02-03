@@ -101,7 +101,7 @@ export default function App() {
   const OPTIMAL_END_MONTH = 24;
 
   // Derive values based on whether we are using the CSV bike or the simulated one
-  const { currentDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd } = useMemo(() => {
+  const { currentDistance, monthlyDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd } = useMemo(() => {
     if (isCsvBike) {
       // Use CSV Data
       const data = (DATASET && DATASET.length > 0) ? DATASET[currentMonthIndex] : null;
@@ -109,6 +109,7 @@ export default function App() {
       if (!data) {
         return {
           currentDistance: 0,
+          monthlyDistance: 0,
           buyBackValue: 0,
           healthScore: 0,
           productionDate: "2023-10-25",
@@ -119,6 +120,7 @@ export default function App() {
 
       return {
         currentDistance: data.total_milage,
+        monthlyDistance: data.monthly_milage,
         buyBackValue: data.second_hand_price,
         healthScore: data.health_score,
         productionDate: data.production_date,
@@ -137,6 +139,7 @@ export default function App() {
       
       return {
         currentDistance: dist,
+        monthlyDistance: Math.round(5000 / 36),
         buyBackValue: val,
         healthScore: score,
         productionDate: "2024-01-15",
@@ -231,6 +234,7 @@ export default function App() {
         <div className="grid grid-cols-1 gap-6">
            <Recommendations 
               currentKm={currentDistance}
+              monthlyDistance={monthlyDistance}
               optimalSellStartKm={optimalSellStart}
               optimalSellEndKm={optimalSellEnd}
               purchasePrice={currentBike.purchasePrice}
