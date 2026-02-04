@@ -29,7 +29,7 @@ export default function App() {
     {
       name: "LD 940E", // Visual name (Dataset is LD 940E)
       epc: "30395DFA8210100000000F7A", // Updated to match CSV
-      image: "https://www.transitionvelo.com/produit/decathlon-btwin-ld-940-e/",
+      image: "./photos/Decat-LD-940-E-1200x900.webp",
       purchasePrice: 2799, // Updated to match CSV first_sale_price
       schedule: [
         { 
