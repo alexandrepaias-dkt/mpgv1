@@ -10,6 +10,7 @@ import SubscriptionModal from './components/SubscriptionModal';
 import ExploreModal from './components/ExploreModal';
 import TimelineControl from './components/TimelineControl';
 import { DATASET } from './data/simulationData';
+import ld940eImage from './photos/Decat-LD-940-E-1200x900.webp';
 
 export default function App() {
   const [currentMonthIndex, setCurrentMonthIndex] = useState(12); // Start at index 12 (approx 1 year in)
@@ -27,9 +28,9 @@ export default function App() {
   
   const BIKES = [
     {
-      name: "Van Rysel EDR CF Ultegra", // Visual name (Dataset is LD 940E)
+      name: "LD 940E", // Visual name (Dataset is LD 940E)
       epc: "30395DFA8210100000000F7A", // Updated to match CSV
-      image: "https://images.unsplash.com/photo-1764067521927-9fc70adc5a31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyb2FkJTIwYmlrZSUyMHByb2Zlc3Npb25hbCUyMGN5Y2xpbmd8ZW58MXx8fHwxNzcwMDQyMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: ld940eImage,
       purchasePrice: 2799, // Updated to match CSV first_sale_price
       schedule: [
         { 
