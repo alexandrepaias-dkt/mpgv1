@@ -68,7 +68,7 @@ export default function App() {
     },
     {
       name: "Rockrider XC 900",
-      epc: "30395DFA8210100000000FFF", 
+      epc: "30395DFA82100FC000000EBA", 
       image: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=1080", 
       purchasePrice: 1800,
       schedule: [
@@ -273,7 +273,7 @@ export default function App() {
         <InvestmentOptimizer 
           currentKm={currentDistance} 
           healthScore={healthScore}
-          maxKm={currentBikeIndex === 0 ? 20000 : 8000} // Custom scale for MTB
+          maxKm={Math.max(20000, Math.round(optimalSellEnd * 1.3))} 
           optimalSellStart={optimalSellStart}
           optimalSellEnd={optimalSellEnd}
           ownershipChangeKm={ownershipChangeKm}
