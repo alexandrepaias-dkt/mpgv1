@@ -18,8 +18,14 @@ export default function Recommendations({
   const isOptimalWindow = currentKm >= optimalSellStartKm && currentKm <= optimalSellEndKm;
   const isUpgradePhase = currentKm > optimalSellEndKm;
 
+  // Calculate stats robustly
+  const rawCost = purchasePrice - currentValue;
   const costPerKm = distance > 0 
-    ? ((purchasePrice - currentValue) / distance).toFixed(2)
+    ? Math.max(0, rawCost / distance).toFixed(2) 
+    : "0.00";
+
+  const retention = purchasePrice > 0 
+    ? Math.round((currentValue / purchasePrice) * 100) 
     : 0;
 
   return (

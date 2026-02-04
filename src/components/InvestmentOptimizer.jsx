@@ -150,19 +150,34 @@ export default function InvestmentOptimizer({
 
           {/* Service History Markers (Top Side) */}
           {serviceHistory
-            .filter(item => item.status === 'completed' && item.mileage <= maxKm)
-            .map((item, index) => (
-            <div 
-              key={`service-${index}`}
-              className="absolute top-0 -translate-x-1/2"
-              style={{ left: `${(item.mileage / milestones.endOfLife) * 100}%` }}
-            >
-               <div className="flex flex-col items-center -translate-y-full mb-1">
-                  <p className="text-[9px] font-bold text-[#34B78F] uppercase tracking-tighter bg-white/80 px-1 rounded">Service</p>
-                  <div className="w-0.5 h-2 bg-[#34B78F]/40" />
-               </div>
-            </div>
-          ))}
+            .filter(item => (item.status === 'completed' || item.status === 'missed') && item.mileage <= maxKm)
+            .map((item, index) => {
+              const isMissed = item.status === 'missed';
+              const color = isMissed ? '#D70321' : '#34B78F';
+              const label = isMissed ? 'Missed' : 'Service';
+              const bgClass = isMissed ? 'bg-white/90' : 'bg-white/80';
+
+              return (
+                <div 
+                  key={`service-${index}`}
+                  className="absolute top-0 -translate-x-1/2"
+                  style={{ left: `${(item.mileage / milestones.endOfLife) * 100}%` }}
+                >
+                  <div className="flex flex-col items-center -translate-y-full mb-1">
+                      <p 
+                        className={`text-[9px] font-bold uppercase tracking-tighter ${bgClass} px-1 rounded shadow-sm`}
+                        style={{ color: color }}
+                      >
+                        {label}
+                      </p>
+                      <div 
+                        className="w-0.5 h-2" 
+                        style={{ backgroundColor: isMissed ? 'rgba(215, 3, 33, 0.6)' : 'rgba(52, 183, 143, 0.4)' }}
+                      />
+                  </div>
+                </div>
+              );
+            })}
 
           {/* Current Position Marker */}
           <div 

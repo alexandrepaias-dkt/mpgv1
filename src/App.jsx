@@ -70,7 +70,7 @@ export default function App() {
       name: "Rockrider XC 900",
       epc: "30395DFA82100FC000000EBA", 
       image: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=1080", 
-      purchasePrice: 1800,
+      purchasePrice: 2239,
       schedule: [
         { id: 1, service: "Suspension Fork Setup", mileage: 300, valueImpact: 0, diyDetails: { parts: [{ name: "Shock Pump", price: "€25" }], tutorial: "Setting Sag and Rebound" } },
         { id: 2, service: "Tubeless Sealant Top-up", mileage: 800, valueImpact: 30, diyDetails: { parts: [{ name: "Sealant (100ml)", price: "€15" }], tutorial: "Tubeless Maintenance" } },
@@ -116,7 +116,7 @@ export default function App() {
         total_milage: 0,
         monthly_milage: 0,
         health_score: 100,
-        second_hand_price: firstRecord.first_sale_price,
+        second_hand_price: currentBike.purchasePrice, // Match configured purchase price
         maintenance_count: 0
       };
       return [syntheticStart, ...rawData];
@@ -202,8 +202,14 @@ export default function App() {
     
     return currentBike.schedule.map(item => {
       let status = 'future';
+      
       if (currentDistance >= item.mileage) {
-        status = 'completed';
+        // Feature: Simulate missed services for the second bike (Rockrider)
+        if (currentBikeIndex === 1) {
+           status = 'missed';
+        } else {
+           status = 'completed';
+        }
       } else if (!foundNext) {
         status = 'upcoming'; 
         foundNext = true;
@@ -214,7 +220,7 @@ export default function App() {
         status: status,
       };
     });
-  }, [currentDistance, currentBike]);
+  }, [currentDistance, currentBike, currentBikeIndex]);
 
   const handleBookService = (serviceItem) => {
     setSelectedService(serviceItem.service);

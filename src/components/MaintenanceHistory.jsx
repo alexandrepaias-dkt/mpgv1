@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Wrench, Factory, Calendar, Bell, Hammer, ChevronDown, ChevronUp, ShoppingCart, PlayCircle, QrCode, Link as LinkIcon, PlusCircle } from 'lucide-react';
+import { CheckCircle2, Wrench, Factory, Calendar, Bell, Hammer, ChevronDown, ChevronUp, ShoppingCart, PlayCircle, QrCode, Link as LinkIcon, PlusCircle, XCircle } from 'lucide-react';
 
 // Sub-component for the DIY expansion panel
 const DIYPanel = ({ parts, tutorial }) => (
@@ -159,6 +159,7 @@ export default function MaintenanceHistory({ history, onBookService }) {
 
   const getEventIcon = (status) => {
     if (status === 'completed') return <CheckCircle2 size={20} className="text-[#34B78F]" />;
+    if (status === 'missed') return <XCircle size={20} className="text-[#D70321]" />;
     if (status === 'upcoming') return <Calendar size={20} className="text-[#3643BA]" />;
     return <Wrench size={20} className="text-gray-400" />;
   };
@@ -168,6 +169,12 @@ export default function MaintenanceHistory({ history, onBookService }) {
     if (status === 'completed') {
       return {
         card: 'border-[#34B78F] bg-[#34B78F]/5 hover:bg-[#34B78F]/10 cursor-pointer',
+        opacity: 'opacity-100'
+      };
+    }
+    if (status === 'missed') {
+      return {
+        card: 'border-[#D70321]/30 bg-[#D70321]/5',
         opacity: 'opacity-100'
       };
     }
@@ -208,6 +215,7 @@ export default function MaintenanceHistory({ history, onBookService }) {
                 {/* Icon */}
                 <div className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white border-2 ${
                   item.status === 'completed' ? 'border-[#34B78F]' : 
+                  item.status === 'missed' ? 'border-[#D70321]' :
                   item.status === 'upcoming' ? 'border-[#3643BA] shadow-lg' : 'border-gray-200'
                 }`}>
                   {getEventIcon(item.status)}
@@ -243,10 +251,19 @@ export default function MaintenanceHistory({ history, onBookService }) {
                         </span>
                       </div>
                     )}
+
+                    {/* Missed Badge */}
+                    {item.status === 'missed' && (
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="px-2 py-1 bg-[#D70321]/10 text-[#D70321] text-[10px] font-bold uppercase rounded border border-[#D70321]/20 flex items-center gap-1">
+                          Not Done
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Actions for Upcoming/Future */}
-                  {item.status !== 'completed' && (
+                  {/* Actions for Upcoming/Future (Not shown for missed) */}
+                  {item.status !== 'completed' && item.status !== 'missed' && (
                     <div className="mt-4 space-y-3">
                       
                       {/* Primary Actions Row */}
