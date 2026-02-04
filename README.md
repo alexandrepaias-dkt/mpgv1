@@ -1,54 +1,73 @@
-# TraceRider - Gear Investment & Care Dashboard
+# TraceRider 🚴‍♂️📱
 
-**TraceRider** is a high-fidelity prototype for a digital asset management platform focused on the longevity and circularity of sporting equipment. Developed as a hackathon concept for Decathlon, it transforms high-value products like bikes into managed assets with transparent histories.
+> **Decathlon Traceability Hackathon 2026**  
+> *Theme: How to use traceability for the hyper-personalization of services*
 
-## Core Philosophy
-- **Care for Longevity**: High-resolution maintenance tracking to ensure gear lasts longer.
-- **Traceability**: Leveraging Digital Passports (EPCIS) to create a "V5C" for bikes.
-- **Investment Optimization**: Helping users understand the real-time value of their gear and the optimal moments to service, upgrade, or trade-in.
+**TraceRider** is a digital asset management dashboard that transforms a bike from a simple product into a connected, value-retaining asset. By leveraging traceability data (EPCIS), we provide hyper-personalized services that extend the product's life and optimize the user's investment.
 
-## Key Features
-
-### 1. Value Timeline & Simulator
-Visualize how maintenance and mileage affect a bike's buy-back value over time. Use the timeline slider to simulate future usage and see the impact on asset health.
-
-### 2. Smart Investment Optimizer
-Identify the "Sweet Spot" for resale. The dashboard highlights the optimal window to trade-in your bike to maximize value before heavy depreciation or major service requirements kick in.
-
-### 3. Traceability Alerts
-Receive contextual advice based on the asset's lifecycle stage. Whether it's a "Traceability Alert" for a needed service or a recommendation for a subscription plan to lower ownership costs.
-
-### 4. Digital Maintenance Ledger
-A comprehensive history of services, parts replaced, and DIY guides. Every action is recorded to boost the bike's "Health Score" and subsequent resale value.
-
-## Tech Stack
-- **Frontend**: React + Vite
-- **Styling**: Tailwind CSS (Decathlon Design System inspired)
-- **Charts**: Recharts (Customized for value/health visualization)
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-
-## Data Strategy
-TraceRider uses a hybrid data approach to power the prototype:
-- **Real-world Data**: The `Van Rysel EDR` profile is powered by an embedded CSV dataset containing historical and projected values for a real product.
-- **Algorithmic Simulation**: The `Rockrider XC 900` profile demonstrates our simulation engine, calculating depreciation and health scores dynamically based on usage patterns.
-
-## Getting Started
-
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Run Development Server**
-   ```bash
-   npm run dev
-   ```
-
-3. **Build for Production**
-   ```bash
-   npm run build
-   ```
+## 👥 The Team
+- **Alex**
+- **Hugo**
+- **Youssef**
+- **Thibault**
 
 ---
-*Developed for the 2026 Asset Management Hackathon.*
+
+## 🎯 Project Vision
+In the context of Decathlon's sports customers, **TraceRider** answers the question: *How can we use the digital history of a product to offer the right service at the exact right moment?*
+
+Our solution uses a "Digital Twin" approach to:
+1.  **Predict Maintenance:** Suggest services based on actual usage (mileage) rather than generic time intervals.
+2.  **Optimize Resale:** Calculate real-time "Health Scores" and "Buy-Back Values" to tell the user the financially optimal time to upgrade.
+3.  **Personalize Care:** Offer specific DIY tutorials or workshop bookings based on the exact components installed on the bike (tracked via EPC).
+
+## 🌟 Key Features
+
+### 1. 📈 Dynamic Value Timeline
+A powerful simulator that lets users visualize their bike's future value.
+- **Traceability in action:** Integrates real usage data to project future depreciation.
+- **User Benefit:** Helps users understand the cost of ownership and the value of maintenance.
+
+### 2. 🧠 Smart Investment Optimizer
+Identify the "Sweet Spot" for resale.
+- **Hyper-personalization:** The system alerts the user when their specific bike model, with its specific condition, is at its peak trade-in value relative to upcoming maintenance costs.
+
+### 3. 🔧 Digital Maintenance Ledger
+A transparent, immutable history of all services and part replacements.
+- **Traceability in action:** Every part replaced is logged (potentially with its own EPC), creating a "V5C" (logbook) for the bike that proves its condition to future buyers.
+- **Features:** "DIY" vs "Workshop" toggles, component-specific tutorial links.
+
+### 4. 🔔 Contextual Recommendations
+- **Subscription Offers:** Suggest maintenance plans when high-usage patterns are detected.
+- **Upgrade Prompts:** Recommend compatible accessories or newer models based on the rider's lifecycle stage.
+
+## 🛠 Tech Stack
+- **Frontend:** React + Vite
+- **Styling:** Tailwind CSS (Customized for Decathlon's design system)
+- **Visualization:** Recharts (Custom value/health charts) & Framer Motion (Animations)
+- **Data Source:** Hybrid model using CSV datasets (for the *Van Rysel EDR* profile) and algorithmic simulation (for the *Rockrider XC 900* profile).
+
+## 🚀 Getting Started
+
+1.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+2.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
+
+3.  **Build for Production**
+    ```bash
+    npm run build
+    ```
+
+## 📂 Project Structure
+- `src/components`: UI components including the Simulator, Recommendations engine, and Modals.
+- `src/data`: Simulation logic and CSV datasets for the bike profiles.
+- `src/photos`: Assets for the bike visualizer.
+
+---
+*Created with ❤️ for the 2026 Decathlon Hackathon.*
