@@ -8,9 +8,9 @@ export default function ExploreModal({ isOpen, onClose, type = 'accessories' }) 
     accessories: {
       title: "Recommended Upgrades",
       products: [
-        { name: "Carbon Wheels Set", price: "€800", image: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=200", tag: "Best Match" },
-        { name: "Aero Handlebars", price: "€250", image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=200", tag: "Performance" },
-        { name: "Ceramic Bearings", price: "€120", image: "https://images.unsplash.com/photo-1559348349-86f1f65817fe?auto=format&fit=crop&q=80&w=200", tag: "Efficiency" }
+        { name: "Carbon Wheels Set", price: "€800", image: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=200", tag: "Best Match", link: "https://www.decathlon.fr/p/paire-de-roues-carbone-vr-35-tubeless-a-disc-compatible-shimano-hg/_/R-p-361347?mc=8930433&c=noir&gad_campaignid=16508981681&gad_source=1&gbraid=0AAAAADonRCa4_pHN_mcX_Sshy1bNo1D_P&gclid=Cj0KCQiA-YvMBhDtARIsAHZuUzIqIMK-9jxhsvKPapDdb_bWgpc5j3Iu1jePQIWcDq0R1hdOvJyDMkIaAoGHEALw_wcB&utm_campaign=fr_ct-shopp_t-perf_260120-aw_ts-bra_f-cv_o-roas_spu-cy_pt-pb_xx-shopping-mq-cycling-mp_&utm_id=16508981681-197586730011&utm_medium=sea&utm_source=google" },
+        { name: "Aero Handlebars", price: "€250", image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=200", tag: "Performance", link: "https://www.decathlon.fr/p/mp/vision/seconde-vie-cintre-vision-trimax-carbone-4d-di2-31-8mm-400mm/_/R-p-c0940626-5e47-4ddc-bff6-e2c694bdccb9?mc=c0940626-5e47-4ddc-bff6-e2c694bdccb9_c1" },
+        { name: "Ceramic Bearings", price: "€120", image: "https://images.unsplash.com/photo-1559348349-86f1f65817fe?auto=format&fit=crop&q=80&w=200", tag: "Efficiency", link: "https://www.decathlon.fr/p/mp/black-bearing/boitier-de-pedalier-black-bearing-skf/_/R-p-5b6567d0-8300-4619-8ce9-aece645cf9c6?mc=5b6567d0-8300-4619-8ce9-aece645cf9c6_c1&c=noir" }
       ]
     },
     bikes: {
@@ -51,9 +51,15 @@ export default function ExploreModal({ isOpen, onClose, type = 'accessories' }) 
                   </div>
                   <span className="font-bold text-gray-900">{product.price}</span>
                 </div>
-                <button className="text-left text-xs font-bold text-gray-400 mt-2 group-hover:text-[#FF8946] flex items-center gap-1">
-                  {type === 'bikes' ? 'Configure Trade-in' : 'View Details'} <ArrowRight size={12} />
-                </button>
+                {product.link ? (
+                  <a href={product.link} target="_blank" rel="noopener noreferrer" className="text-left text-xs font-bold text-gray-400 mt-2 group-hover:text-[#FF8946] flex items-center gap-1">
+                    {type === 'bikes' ? 'Configure Trade-in' : 'View Details'} <ArrowRight size={12} />
+                  </a>
+                ) : (
+                  <button className="text-left text-xs font-bold text-gray-400 mt-2 group-hover:text-[#FF8946] flex items-center gap-1">
+                    {type === 'bikes' ? 'Configure Trade-in' : 'View Details'} <ArrowRight size={12} />
+                  </button>
+                )}
               </div>
             </div>
           ))}
