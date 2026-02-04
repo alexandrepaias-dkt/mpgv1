@@ -98,9 +98,31 @@ export default function App() {
   // Filter dataset for the current bike
   const currentBikeData = useMemo(() => {
     if (!DATASET) return [];
-    // If not "isCsvBike", we might still want to look for data or return empty if purely simulated
-    // But for this fix, we specifically want to isolate the EPC data if available.
-    return DATASET.filter(d => d.epc === currentBike.epc);
+    
+    // 1. Filter by EPC
+    const rawData = DATASET.filter(d => d.epc === currentBike.epc);
+    
+    if (rawData.length === 0) return [];
+
+    // 2. Check if we need to inject a "Start" point (0 km)
+    // The CSV might start at Jan 1st with 300km already on the clock.
+    const firstRecord = rawData[0];
+    
+    // Ensure we don't duplicate if it already exists (unlikely given the analysis)
+    if (firstRecord.total_milage > 0 && firstRecord.production_date) {
+      const syntheticStart = {
+        ...firstRecord,
+        date: firstRecord.production_date, // Start at production/purchase
+        total_milage: 0,
+        monthly_milage: 0,
+        health_score: 100,
+        second_hand_price: firstRecord.first_sale_price,
+        maintenance_count: 0
+      };
+      return [syntheticStart, ...rawData];
+    }
+
+    return rawData;
   }, [currentBike.epc]);
 
   // Reset or adjust index when bike changes to avoid out-of-bounds
@@ -255,6 +277,7 @@ export default function App() {
           optimalSellStart={optimalSellStart}
           optimalSellEnd={optimalSellEnd}
           ownershipChangeKm={ownershipChangeKm}
+          serviceHistory={calculatedHistory}
         />
 
 
