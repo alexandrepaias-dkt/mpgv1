@@ -47,7 +47,7 @@ export default function App() {
           valueImpact: 50, 
           diyDetails: { parts: [{ name: "Chain Checker Tool", price: "€12" }], tutorial: "How to Measure Chain Wear" },
           replacedComponents: [
-            { name: "Shimano Ultegra Chain 11s", epc: "3039606203C36C8000000001", tutorialUrl: "https://youtu.be/some_chain_guide" }
+            { name: "Shimano Ultegra Chain 11s", epc: "30395DFA8181C440000139D4", tutorialUrl: "https://youtu.be/some_chain_guide" }
           ]
         },
         { 
