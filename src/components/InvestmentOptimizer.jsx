@@ -6,7 +6,9 @@ export default function InvestmentOptimizer({
   healthScore = 100, 
   maxKm = 20000,
   optimalSellStart = 14000,
-  optimalSellEnd = 17500
+  optimalSellEnd = 17500,
+  ownershipChangeKm = null,
+  serviceHistory = []
 }) {
   // Timeline milestones (in km) - Dynamic scale
   const milestones = {
@@ -101,11 +103,34 @@ export default function InvestmentOptimizer({
 
       {/* Horizontal Timeline */}
       <div className="relative px-4 pb-4">
-        <div className="relative h-4 bg-[#F5F4F5] rounded-full overflow-hidden">
-          <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#3643BA]/20 to-[#3643BA]/40"
-            style={{ width: `${(milestones.optimalSellStart / milestones.endOfLife) * 100}%` }}
-          />
+        <div className="relative h-4 bg-[#F5F4F5] rounded-full overflow-visible"> {/* overflow-visible for flags */}
+          
+          {/* Zone 1: Early Ownership (Split by Past/Current Owner) */}
+          {ownershipChangeKm ? (
+            <>
+              {/* Past Owner Zone (Grey) */}
+              <div 
+                className="absolute top-0 left-0 h-full bg-[#E5E7EB]"
+                style={{ width: `${(ownershipChangeKm / milestones.endOfLife) * 100}%` }}
+              />
+              {/* Current Owner Zone (Blue Gradient) */}
+              <div 
+                className="absolute top-0 h-full bg-gradient-to-r from-[#3643BA]/20 to-[#3643BA]/40"
+                style={{ 
+                  left: `${(ownershipChangeKm / milestones.endOfLife) * 100}%`,
+                  width: `${((milestones.optimalSellStart - ownershipChangeKm) / milestones.endOfLife) * 100}%`
+                }}
+              />
+            </>
+          ) : (
+            /* Original Single Zone */
+            <div 
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#3643BA]/20 to-[#3643BA]/40"
+              style={{ width: `${(milestones.optimalSellStart / milestones.endOfLife) * 100}%` }}
+            />
+          )}
+
+          {/* Zone 2: Best Sell Window (Green) */}
           <div 
             className="absolute top-0 h-full bg-gradient-to-r from-[#34B78F] to-[#7AFFA6]"
             style={{ 
@@ -113,6 +138,8 @@ export default function InvestmentOptimizer({
               width: `${((milestones.optimalSellEnd - milestones.optimalSellStart) / milestones.endOfLife) * 100}%`
             }}
           />
+
+          {/* Zone 3: Upgrade/High Usage (Orange/Red) */}
           <div 
             className="absolute top-0 h-full bg-gradient-to-r from-[#FF8946] to-[#D70321]"
             style={{ 
@@ -120,9 +147,41 @@ export default function InvestmentOptimizer({
               width: `${((milestones.endOfLife - milestones.optimalSellEnd) / milestones.endOfLife) * 100}%`
             }}
           />
-          
+
+          {/* Service History Markers (Top Side) */}
+          {serviceHistory
+            .filter(item => (item.status === 'completed' || item.status === 'missed') && item.mileage <= maxKm)
+            .map((item, index) => {
+              const isMissed = item.status === 'missed';
+              const color = isMissed ? '#D70321' : '#34B78F';
+              const label = isMissed ? 'Missed' : 'Service';
+              const bgClass = isMissed ? 'bg-white/90' : 'bg-white/80';
+
+              return (
+                <div 
+                  key={`service-${index}`}
+                  className="absolute top-0 -translate-x-1/2"
+                  style={{ left: `${(item.mileage / milestones.endOfLife) * 100}%` }}
+                >
+                  <div className="flex flex-col items-center -translate-y-full mb-1">
+                      <p 
+                        className={`text-[9px] font-bold uppercase tracking-tighter ${bgClass} px-1 rounded shadow-sm`}
+                        style={{ color: color }}
+                      >
+                        {label}
+                      </p>
+                      <div 
+                        className="w-0.5 h-2" 
+                        style={{ backgroundColor: isMissed ? 'rgba(215, 3, 33, 0.6)' : 'rgba(52, 183, 143, 0.4)' }}
+                      />
+                  </div>
+                </div>
+              );
+            })}
+
+          {/* Current Position Marker */}
           <div 
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-out"
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-out z-20"
             style={{ left: `${Math.min(100, timelinePosition)}%` }}
           >
             <div className="relative">
@@ -139,6 +198,7 @@ export default function InvestmentOptimizer({
           </div>
         </div>
 
+        {/* Labels below timeline */}
         <div className="relative mt-6 h-12 text-[10px] sm:text-xs">
           <div className="absolute" style={{ left: '0%', transform: 'translateX(-50%)' }}>
             <div className="text-center">
@@ -147,6 +207,18 @@ export default function InvestmentOptimizer({
               <p className="text-[#616161]">0 km</p>
             </div>
           </div>
+
+          {/* Owner Change Label */}
+          {ownershipChangeKm && (
+            <div className="absolute" style={{ left: `${(ownershipChangeKm / milestones.endOfLife) * 100}%`, transform: 'translateX(-50%)' }}>
+              <div className="text-center">
+                <div className="w-0.5 h-4 bg-[#616161] mx-auto mb-2" />
+                <p className="font-bold text-[#616161] uppercase tracking-tighter">Owner Change</p>
+                <p className="text-[#616161]">{ownershipChangeKm.toLocaleString()} km</p>
+              </div>
+            </div>
+          )}
+
           <div className="absolute" style={{ left: `${(milestones.optimalSellStart / milestones.endOfLife) * 100}%`, transform: 'translateX(-50%)' }}>
             <div className="text-center">
               <div className="w-0.5 h-4 bg-[#34B78F] mx-auto mb-2" />

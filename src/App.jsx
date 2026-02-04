@@ -47,7 +47,7 @@ export default function App() {
           valueImpact: 50, 
           diyDetails: { parts: [{ name: "Chain Checker Tool", price: "€12" }], tutorial: "How to Measure Chain Wear" },
           replacedComponents: [
-            { name: "Shimano Ultegra Chain 11s", epc: "3039606203C36C8000000001", tutorialUrl: "https://youtu.be/some_chain_guide" }
+            { name: "Shimano Ultegra Chain 11s", epc: "30395DFA8181C440000139D4", tutorialUrl: "https://youtu.be/some_chain_guide" }
           ]
         },
         { 
@@ -68,9 +68,9 @@ export default function App() {
     },
     {
       name: "Rockrider XC 900",
-      epc: "30395DFA8210100000000FFF", 
+      epc: "30395DFA82100FC000000EBA", 
       image: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=1080", 
-      purchasePrice: 1800,
+      purchasePrice: 2239,
       schedule: [
         { id: 1, service: "Suspension Fork Setup", mileage: 300, valueImpact: 0, diyDetails: { parts: [{ name: "Shock Pump", price: "€25" }], tutorial: "Setting Sag and Rebound" } },
         { id: 2, service: "Tubeless Sealant Top-up", mileage: 800, valueImpact: 30, diyDetails: { parts: [{ name: "Sealant (100ml)", price: "€15" }], tutorial: "Tubeless Maintenance" } },
@@ -93,7 +93,42 @@ export default function App() {
   ];
 
   const currentBike = BIKES[currentBikeIndex];
-  const isCsvBike = currentBikeIndex === 0;
+  const isCsvBike = currentBikeIndex === 0; // In this prototype, only the first bike uses CSV
+
+  // Filter dataset for the current bike
+  const currentBikeData = useMemo(() => {
+    if (!DATASET) return [];
+    
+    // 1. Filter by EPC
+    const rawData = DATASET.filter(d => d.epc === currentBike.epc);
+    
+    if (rawData.length === 0) return [];
+
+    // 2. Check if we need to inject a "Start" point (0 km)
+    // The CSV might start at Jan 1st with 300km already on the clock.
+    const firstRecord = rawData[0];
+    
+    // Ensure we don't duplicate if it already exists (unlikely given the analysis)
+    if (firstRecord.total_milage > 0 && firstRecord.production_date) {
+      const syntheticStart = {
+        ...firstRecord,
+        date: firstRecord.production_date, // Start at production/purchase
+        total_milage: 0,
+        monthly_milage: 0,
+        health_score: 100,
+        second_hand_price: currentBike.purchasePrice, // Match configured purchase price
+        maintenance_count: 0
+      };
+      return [syntheticStart, ...rawData];
+    }
+
+    return rawData;
+  }, [currentBike.epc]);
+
+  // Reset or adjust index when bike changes to avoid out-of-bounds
+  React.useEffect(() => {
+    setCurrentMonthIndex(0);
+  }, [currentBikeIndex]);
 
   // User Context
   const USER_NAME = "Thomas";
@@ -101,21 +136,19 @@ export default function App() {
   const OPTIMAL_END_MONTH = 24;
 
   // Derive values based on whether we are using the CSV bike or the simulated one
-  const { currentDistance, monthlyDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd } = useMemo(() => {
-    if (isCsvBike) {
-      // Use CSV Data
-      const data = (DATASET && DATASET.length > 0) ? DATASET[currentMonthIndex] : null;
+  const { currentDistance, monthlyDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd, ownershipChangeKm, dates } = useMemo(() => {
+    const isAvailableInCsv = currentBikeData.length > 0;
+    
+    if (isAvailableInCsv) {
+      const data = currentBikeData[currentMonthIndex] || currentBikeData[0];
       
-      if (!data) {
-        return {
-          currentDistance: 0,
-          monthlyDistance: 0,
-          buyBackValue: 0,
-          healthScore: 0,
-          productionDate: "2023-10-25",
-          optimalSellStart: 14000,
-          optimalSellEnd: 17500
-        };
+      // Calculate ownership change mileage
+      let changeKm = null;
+      for (let i = 1; i < currentBikeData.length; i++) {
+        if (currentBikeData[i].owner_number > currentBikeData[i-1].owner_number) {
+          changeKm = currentBikeData[i].total_milage;
+          break;
+        }
       }
 
       return {
@@ -125,29 +158,43 @@ export default function App() {
         healthScore: data.health_score,
         productionDate: data.production_date,
         optimalSellStart: data.low_optimal_resale_milage,
-        optimalSellEnd: data.high_optimal_resale_milage
+        optimalSellEnd: data.high_optimal_resale_milage,
+        ownershipChangeKm: changeKm,
+        dates: currentBikeData.map(d => d.date)
       };
     } else {
-      // Use Legacy Simulation Logic (for Rockrider)
-      const months = currentMonthIndex; // Approximation: index = month
-      const dist = Math.round((months / 36) * 5000);
+      // Simulation Mode (for Rockrider)
+      const totalMonths = 36;
+      const simDates = Array.from({ length: totalMonths }).map((_, i) => {
+        const d = new Date("2024-01-01");
+        d.setMonth(d.getMonth() + i);
+        return d.toISOString();
+      });
+
+      const months = currentMonthIndex;
+      const dist = Math.round((months / totalMonths) * 5000);
       const baseValue = currentBike.purchasePrice;
       const kmDepreciation = dist * (currentBike.purchasePrice / 12500); 
       const ageDepreciation = months * (currentBike.purchasePrice / 125);
       const val = Math.max(500, Math.round(baseValue - kmDepreciation - ageDepreciation));
       const score = Math.max(50, Math.min(100, Math.round(100 - (dist / 100))));
       
+      // Calculate mileage for August 2024 (index 7) for simulated ownership change
+      const changeKm = Math.round((7 / totalMonths) * 5000);
+
       return {
         currentDistance: dist,
-        monthlyDistance: Math.round(5000 / 36),
+        monthlyDistance: Math.round(5000 / totalMonths),
         buyBackValue: val,
         healthScore: score,
         productionDate: "2024-01-15",
-        optimalSellStart: 14000,
-        optimalSellEnd: 17500
+        optimalSellStart: 2500, // Reasonable for MTB
+        optimalSellEnd: 4000,
+        ownershipChangeKm: changeKm,
+        dates: simDates
       };
     }
-  }, [currentMonthIndex, currentBikeIndex, currentBike]);
+  }, [currentMonthIndex, currentBikeIndex, currentBike, currentBikeData]);
 
   // Computed Maintenance History
   const calculatedHistory = useMemo(() => {
@@ -155,8 +202,14 @@ export default function App() {
     
     return currentBike.schedule.map(item => {
       let status = 'future';
+      
       if (currentDistance >= item.mileage) {
-        status = 'completed';
+        // Feature: Simulate missed services for the second bike (Rockrider)
+        if (currentBikeIndex === 1) {
+           status = 'missed';
+        } else {
+           status = 'completed';
+        }
       } else if (!foundNext) {
         status = 'upcoming'; 
         foundNext = true;
@@ -167,7 +220,7 @@ export default function App() {
         status: status,
       };
     });
-  }, [currentDistance, currentBike]);
+  }, [currentDistance, currentBike, currentBikeIndex]);
 
   const handleBookService = (serviceItem) => {
     setSelectedService(serviceItem.service);
@@ -188,6 +241,8 @@ export default function App() {
     }
   };
 
+  const timelineMaxIndex = dates.length - 1;
+
   return (
     <div className="min-h-screen bg-[#F5F4F5] text-[#101010] font-sans pb-12 transition-colors duration-500">
       <Header 
@@ -203,8 +258,8 @@ export default function App() {
         <BikeHero
           productName={currentBike.name}
           epcId={currentBike.epc}
-          productionDate={isCsvBike && DATASET && DATASET.length > 0 ? DATASET[currentMonthIndex]?.production_date : "2024-01-15"}
-          purchaseDate={isCsvBike ? "October 25, 2023" : "January 15, 2024"} // CSV Production Date vs Default
+          productionDate={productionDate}
+          purchaseDate={currentBikeIndex === 0 ? "October 25, 2023" : "January 15, 2024"} 
           buyBackValue={buyBackValue}
           imageUrl={currentBike.image}
           onGetQuote={() => setQuoteModalOpen(true)}
@@ -213,20 +268,22 @@ export default function App() {
         {/* Timeline Control */}
         <TimelineControl 
           currentIndex={currentMonthIndex}
-          maxIndex={DATASET ? DATASET.length - 1 : 36}
+          maxIndex={timelineMaxIndex}
           onIndexChange={setCurrentMonthIndex}
-          currentDate={DATASET && DATASET[currentMonthIndex] ? DATASET[currentMonthIndex].date : new Date().toISOString()}
-          startDate={DATASET && DATASET[0] ? DATASET[0].date : "2024-01-01"}
-          endDate={DATASET && DATASET.length > 0 ? DATASET[DATASET.length - 1].date : "2026-12-01"}
+          currentDate={dates[currentMonthIndex]}
+          startDate={dates[0]}
+          endDate={dates[timelineMaxIndex]}
         />
 
         {/* Investment Optimizer - Full Width */}
         <InvestmentOptimizer 
           currentKm={currentDistance} 
           healthScore={healthScore}
-          maxKm={20000} 
+          maxKm={Math.max(20000, Math.round(optimalSellEnd * 1.3))} 
           optimalSellStart={optimalSellStart}
           optimalSellEnd={optimalSellEnd}
+          ownershipChangeKm={ownershipChangeKm}
+          serviceHistory={calculatedHistory}
         />
 
 
@@ -249,14 +306,14 @@ export default function App() {
 
         {/* Maintenance History */}
         <section className="space-y-6">
-           {/* Timeline Control Copy */}
+           {/* Timeline Control Sync */}
            <TimelineControl 
              currentIndex={currentMonthIndex}
-             maxIndex={DATASET ? DATASET.length - 1 : 36}
+             maxIndex={timelineMaxIndex}
              onIndexChange={setCurrentMonthIndex}
-             currentDate={DATASET && DATASET[currentMonthIndex] ? DATASET[currentMonthIndex].date : new Date().toISOString()}
-             startDate={DATASET && DATASET[0] ? DATASET[0].date : "2024-01-01"}
-             endDate={DATASET && DATASET.length > 0 ? DATASET[DATASET.length - 1].date : "2026-12-01"}
+             currentDate={dates[currentMonthIndex]}
+             startDate={dates[0]}
+             endDate={dates[timelineMaxIndex]}
            />
 
            <MaintenanceHistory 
