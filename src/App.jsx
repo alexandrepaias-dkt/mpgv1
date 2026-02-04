@@ -93,7 +93,20 @@ export default function App() {
   ];
 
   const currentBike = BIKES[currentBikeIndex];
-  const isCsvBike = currentBikeIndex === 0;
+  const isCsvBike = currentBikeIndex === 0; // In this prototype, only the first bike uses CSV
+
+  // Filter dataset for the current bike
+  const currentBikeData = useMemo(() => {
+    if (!DATASET) return [];
+    // If not "isCsvBike", we might still want to look for data or return empty if purely simulated
+    // But for this fix, we specifically want to isolate the EPC data if available.
+    return DATASET.filter(d => d.epc === currentBike.epc);
+  }, [currentBike.epc]);
+
+  // Reset or adjust index when bike changes to avoid out-of-bounds
+  React.useEffect(() => {
+    setCurrentMonthIndex(0);
+  }, [currentBikeIndex]);
 
   // User Context
   const USER_NAME = "Thomas";
@@ -101,21 +114,19 @@ export default function App() {
   const OPTIMAL_END_MONTH = 24;
 
   // Derive values based on whether we are using the CSV bike or the simulated one
-  const { currentDistance, monthlyDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd } = useMemo(() => {
-    if (isCsvBike) {
-      // Use CSV Data
-      const data = (DATASET && DATASET.length > 0) ? DATASET[currentMonthIndex] : null;
+  const { currentDistance, monthlyDistance, buyBackValue, healthScore, productionDate, optimalSellStart, optimalSellEnd, ownershipChangeKm, dates } = useMemo(() => {
+    const isAvailableInCsv = currentBikeData.length > 0;
+    
+    if (isAvailableInCsv) {
+      const data = currentBikeData[currentMonthIndex] || currentBikeData[0];
       
-      if (!data) {
-        return {
-          currentDistance: 0,
-          monthlyDistance: 0,
-          buyBackValue: 0,
-          healthScore: 0,
-          productionDate: "2023-10-25",
-          optimalSellStart: 14000,
-          optimalSellEnd: 17500
-        };
+      // Calculate ownership change mileage
+      let changeKm = null;
+      for (let i = 1; i < currentBikeData.length; i++) {
+        if (currentBikeData[i].owner_number > currentBikeData[i-1].owner_number) {
+          changeKm = currentBikeData[i].total_milage;
+          break;
+        }
       }
 
       return {
@@ -125,29 +136,43 @@ export default function App() {
         healthScore: data.health_score,
         productionDate: data.production_date,
         optimalSellStart: data.low_optimal_resale_milage,
-        optimalSellEnd: data.high_optimal_resale_milage
+        optimalSellEnd: data.high_optimal_resale_milage,
+        ownershipChangeKm: changeKm,
+        dates: currentBikeData.map(d => d.date)
       };
     } else {
-      // Use Legacy Simulation Logic (for Rockrider)
-      const months = currentMonthIndex; // Approximation: index = month
-      const dist = Math.round((months / 36) * 5000);
+      // Simulation Mode (for Rockrider)
+      const totalMonths = 36;
+      const simDates = Array.from({ length: totalMonths }).map((_, i) => {
+        const d = new Date("2024-01-01");
+        d.setMonth(d.getMonth() + i);
+        return d.toISOString();
+      });
+
+      const months = currentMonthIndex;
+      const dist = Math.round((months / totalMonths) * 5000);
       const baseValue = currentBike.purchasePrice;
       const kmDepreciation = dist * (currentBike.purchasePrice / 12500); 
       const ageDepreciation = months * (currentBike.purchasePrice / 125);
       const val = Math.max(500, Math.round(baseValue - kmDepreciation - ageDepreciation));
       const score = Math.max(50, Math.min(100, Math.round(100 - (dist / 100))));
       
+      // Calculate mileage for August 2024 (index 7) for simulated ownership change
+      const changeKm = Math.round((7 / totalMonths) * 5000);
+
       return {
         currentDistance: dist,
-        monthlyDistance: Math.round(5000 / 36),
+        monthlyDistance: Math.round(5000 / totalMonths),
         buyBackValue: val,
         healthScore: score,
         productionDate: "2024-01-15",
-        optimalSellStart: 14000,
-        optimalSellEnd: 17500
+        optimalSellStart: 2500, // Reasonable for MTB
+        optimalSellEnd: 4000,
+        ownershipChangeKm: changeKm,
+        dates: simDates
       };
     }
-  }, [currentMonthIndex, currentBikeIndex, currentBike]);
+  }, [currentMonthIndex, currentBikeIndex, currentBike, currentBikeData]);
 
   // Computed Maintenance History
   const calculatedHistory = useMemo(() => {
@@ -188,6 +213,8 @@ export default function App() {
     }
   };
 
+  const timelineMaxIndex = dates.length - 1;
+
   return (
     <div className="min-h-screen bg-[#F5F4F5] text-[#101010] font-sans pb-12 transition-colors duration-500">
       <Header 
@@ -203,8 +230,8 @@ export default function App() {
         <BikeHero
           productName={currentBike.name}
           epcId={currentBike.epc}
-          productionDate={isCsvBike && DATASET && DATASET.length > 0 ? DATASET[currentMonthIndex]?.production_date : "2024-01-15"}
-          purchaseDate={isCsvBike ? "October 25, 2023" : "January 15, 2024"} // CSV Production Date vs Default
+          productionDate={productionDate}
+          purchaseDate={currentBikeIndex === 0 ? "October 25, 2023" : "January 15, 2024"} 
           buyBackValue={buyBackValue}
           imageUrl={currentBike.image}
           onGetQuote={() => setQuoteModalOpen(true)}
@@ -213,20 +240,21 @@ export default function App() {
         {/* Timeline Control */}
         <TimelineControl 
           currentIndex={currentMonthIndex}
-          maxIndex={DATASET ? DATASET.length - 1 : 36}
+          maxIndex={timelineMaxIndex}
           onIndexChange={setCurrentMonthIndex}
-          currentDate={DATASET && DATASET[currentMonthIndex] ? DATASET[currentMonthIndex].date : new Date().toISOString()}
-          startDate={DATASET && DATASET[0] ? DATASET[0].date : "2024-01-01"}
-          endDate={DATASET && DATASET.length > 0 ? DATASET[DATASET.length - 1].date : "2026-12-01"}
+          currentDate={dates[currentMonthIndex]}
+          startDate={dates[0]}
+          endDate={dates[timelineMaxIndex]}
         />
 
         {/* Investment Optimizer - Full Width */}
         <InvestmentOptimizer 
           currentKm={currentDistance} 
           healthScore={healthScore}
-          maxKm={20000} 
+          maxKm={currentBikeIndex === 0 ? 20000 : 8000} // Custom scale for MTB
           optimalSellStart={optimalSellStart}
           optimalSellEnd={optimalSellEnd}
+          ownershipChangeKm={ownershipChangeKm}
         />
 
 
@@ -249,14 +277,14 @@ export default function App() {
 
         {/* Maintenance History */}
         <section className="space-y-6">
-           {/* Timeline Control Copy */}
+           {/* Timeline Control Sync */}
            <TimelineControl 
              currentIndex={currentMonthIndex}
-             maxIndex={DATASET ? DATASET.length - 1 : 36}
+             maxIndex={timelineMaxIndex}
              onIndexChange={setCurrentMonthIndex}
-             currentDate={DATASET && DATASET[currentMonthIndex] ? DATASET[currentMonthIndex].date : new Date().toISOString()}
-             startDate={DATASET && DATASET[0] ? DATASET[0].date : "2024-01-01"}
-             endDate={DATASET && DATASET.length > 0 ? DATASET[DATASET.length - 1].date : "2026-12-01"}
+             currentDate={dates[currentMonthIndex]}
+             startDate={dates[0]}
+             endDate={dates[timelineMaxIndex]}
            />
 
            <MaintenanceHistory 

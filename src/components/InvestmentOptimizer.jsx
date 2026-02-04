@@ -6,7 +6,8 @@ export default function InvestmentOptimizer({
   healthScore = 100, 
   maxKm = 20000,
   optimalSellStart = 14000,
-  optimalSellEnd = 17500
+  optimalSellEnd = 17500,
+  ownershipChangeKm = null
 }) {
   // Timeline milestones (in km) - Dynamic scale
   const milestones = {
@@ -120,9 +121,24 @@ export default function InvestmentOptimizer({
               width: `${((milestones.endOfLife - milestones.optimalSellEnd) / milestones.endOfLife) * 100}%`
             }}
           />
+
+          {/* Ownership Change Marker */}
+          {ownershipChangeKm && (
+            <div 
+              className="absolute top-0 h-full border-l-2 border-dashed border-gray-500 z-10"
+              style={{ left: `${(ownershipChangeKm / milestones.endOfLife) * 100}%` }}
+            >
+               <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center w-max">
+                  <div className="bg-[#3643BA] text-white text-[9px] px-1.5 py-0.5 rounded shadow-sm font-bold uppercase tracking-wider">
+                    2nd Hand
+                  </div>
+                  <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[3px] border-t-[#3643BA]"></div>
+               </div>
+            </div>
+          )}
           
           <div 
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-out"
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-out z-20"
             style={{ left: `${Math.min(100, timelinePosition)}%` }}
           >
             <div className="relative">
