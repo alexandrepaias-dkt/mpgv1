@@ -10,6 +10,7 @@ import SubscriptionModal from './components/SubscriptionModal';
 import ExploreModal from './components/ExploreModal';
 import TimelineControl from './components/TimelineControl';
 import { DATASET } from './data/simulationData';
+import ld940eImage from './photos/Decat-LD-940-E-1200x900.webp';
 
 export default function App() {
   const [currentMonthIndex, setCurrentMonthIndex] = useState(12); // Start at index 12 (approx 1 year in)
@@ -29,7 +30,7 @@ export default function App() {
     {
       name: "LD 940E", // Visual name (Dataset is LD 940E)
       epc: "30395DFA8210100000000F7A", // Updated to match CSV
-      image: "./photos/Decat-LD-940-E-1200x900.webp",
+      image: ld940eImage,
       purchasePrice: 2799, // Updated to match CSV first_sale_price
       schedule: [
         { 
