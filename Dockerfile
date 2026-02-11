@@ -1,4 +1,4 @@
-# Étape 1 : Build de l'application
+# Force rebuild - version2
 FROM node:20-alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
@@ -6,10 +6,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Étape 2 : Serveur de production Nginx
 FROM nginx:stable-alpine
-COPY --from=build-stage /app/dist /usr/share/nginx/html
-# Configuration du port 8080 pour Cloud Run
+# Changement ici pour casser le cache : on définit le port AVANT de copier les fichiers
 RUN sed -i 's/listen  80;/listen 8080;/g' /etc/nginx/conf.d/default.conf
+COPY --from=build-stage /app/dist /usr/share/nginx/html
 EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
